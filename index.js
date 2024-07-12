@@ -6,6 +6,7 @@ const port = 3000
 //middleware
 app.use(bodyparser.json())
 app.use(express.Router())
+app.use(express.json())
 
 
 //require files
