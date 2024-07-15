@@ -4,11 +4,11 @@ const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
 
+
 async function Usersignup(req, res) {
     try {
 
         const { firstName, lastName, birthdate, email, phone, password, avatar, type } = req.body
-        // console.log('req.body --->', req.body);
 
         const existingUserByEmail = await db.user.findOne({ where: { email } })
         if (existingUserByEmail) {
@@ -42,6 +42,7 @@ async function Usersignup(req, res) {
                 return res.status(201).json({ msg: "Registration successful. Please check your email for verification." });
             }
         })
+        console.log('newUser --->', newUser);
         res.status(200).json({ status: 'User Registration SuccessFully !' })
     } catch (error) {
         console.error(error)
@@ -52,7 +53,7 @@ async function Usersignup(req, res) {
 async function verify_email(req, res) {
     try {
         const { token } = req?.params
-        console.log('✌️ req?.query; --->', req?.params);
+        console.log(' req?.query; --->', req?.params);
         if (!token) {
             return res.status(400).json({ msg: "Token is required" })
         }
@@ -92,6 +93,65 @@ async function UserSignIn(req, res) {
     }
 }
 
+async function forgotPassword(req, res) {
+    try {
+        const findEmail = await db.user.findOne({ where: { email: req.body.email } })
+        if (!findEmail) {
+            res.json({ msg: "email not found" })
+        } else {
+            const token = jwt.sign({ id: findEmail.id }, secretKey, { expiresIn: "1d" })
+            console.log('forgottoken --->', token);
+            findEmail.forgotpasswordToken = token
+            findEmail.save()
+
+            const mailOptions = ({
+                from: 'yashradadiya013@gmail.com',
+                to: findEmail.email,
+                subject: 'reset password',
+                text: `Click on the following link to forgot your password: http://localhost:3000/api/resetpassword/${token}`
+            })
+            transporter.sendMail(mailOptions, (errro) => {
+                if (errro) {
+                    res.status(404).json({ error: 'Email sending failed' })
+                }
+                res.json({ status: 'email send success...!', token })
+            })
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
+async function resetPassword(req, res) {
+    try {
+        const token = req.headers?.token;
+        if (!token) {
+            return res.status(400).json({ message: 'Token is missing' });
+        }
+
+        const findUser = await db.user.findOne({ where: { forgotpasswordToken: token } });
+        if (!findUser) {
+            return res.status(404).json({ message: 'Token not found' });
+        }
+
+        const { newPassword } = req.body;
+        if (!newPassword) {
+            return res.status(400).json({ message: 'New password is missing' });
+        }
+
+        findUser.password = await bcrypt.hash(newPassword, 10);
+        await findUser.save();
+
+        res.json({ message: 'Password forgot successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
+
+
 
 async function SerchingData(req, res) {
     try {
@@ -122,5 +182,7 @@ module.exports = {
     Usersignup,
     SerchingData,
     UserSignIn,
-    verify_email
+    verify_email,
+    forgotPassword,
+    resetPassword
 }

@@ -16,6 +16,7 @@ const userRouter =  require('./router/user')
 app.get('/',(req,res)=>{
     res.send("welcome home page")
 })
+
 app.use('/api',userRouter)
 
 app.listen(port,()=>{console.log(`server started on port${port}`);})

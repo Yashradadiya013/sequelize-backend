@@ -46,6 +46,9 @@ module.exports = (sequelize, DataTypes) => {
             type: DataTypes.BOOLEAN,
             defaultValue: true,
         },
+        forgotpasswordToken:{
+            type:DataTypes.STRING
+        },
         avatar: {
             type: DataTypes.STRING,
             allowNull: true,

@@ -32,3 +32,5 @@ db.bookIssue.belongsTo(db.user, { foreignKey: 'userId' });
 db.sequelize.sync({ force: false })
 
 module.exports = db
+
+// mdbhadani63@gmail.com
