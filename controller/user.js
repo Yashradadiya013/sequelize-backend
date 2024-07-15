@@ -123,7 +123,6 @@ async function forgotPassword(req, res) {
     }
 }
 
-
 async function resetPassword(req, res) {
     try {
         const token = req.headers?.token;
@@ -151,7 +150,30 @@ async function resetPassword(req, res) {
     }
 }
 
+async function changepassword(req, res) {
+    try {
+        const { currentPassword, newPassword } = req.body
+        if (!currentPassword || !newPassword) {
+            return res.status(400).json({ msg: "curunt and new password required" })
+        }
+        const findUser = await db.user.findOne({ where: { id: req.params.id } });
+        if (!findUser) {
+            return res.status(404).json({ msg: "Invalid User" })
+        }
+        const passwordValid = await bcrypt.compare(currentPassword, findUser.password)
+        if (!passwordValid) {
+            return res.status(404).json({ msg: "currunt password is not match" })
+        }
+        const HashPassword = bcrypt.hashSync(newPassword, 10)
+        findUser.password = HashPassword
 
+        await findUser.save()
+        res.status(200).json({ message: 'Password changed successfully' });
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ message: 'Server error' });
+    }
+}
 
 async function SerchingData(req, res) {
     try {
@@ -184,5 +206,6 @@ module.exports = {
     UserSignIn,
     verify_email,
     forgotPassword,
-    resetPassword
+    resetPassword,
+    changepassword
 }
