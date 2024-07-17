@@ -1,11 +1,13 @@
 const express = require('express')
 const app = express()
 const bodyparser = require('body-parser')
+var cookieParser = require('cookie-parser')
 const port = 3000
 
 //middleware
 app.use(bodyparser.json())
 app.use(express.Router())
+app.use(cookieParser())
 app.use(express.json())
 
 

@@ -3,12 +3,13 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
+const { Op, where } = require('sequelize')
 
 
 async function Usersignup(req, res) {
     try {
 
-        const { firstName, lastName, birthdate, email, phone, password, avatar, type } = req.body
+        const { firstName, lastName, birthdate, email, phone, password, type } = req.body
 
         const existingUserByEmail = await db.user.findOne({ where: { email } })
         if (existingUserByEmail) {
@@ -25,7 +26,6 @@ async function Usersignup(req, res) {
             phone,
             password: HashPassword,
             verification_token: token,
-            avatar,
             type
         })
         const mailOptions = {
@@ -62,6 +62,10 @@ async function verify_email(req, res) {
             return res.status(401).json({ msg: "Invalid Token" });
         }
         user.isVerified = true;
+
+        var decodedEmail = jwt.verify(token, secretKey);
+        res.cookie('librarian', decodedEmail.email);
+
         await user.save();
         return res.json({ status: 'Email Verification Successfully...' });
     } catch (error) {
@@ -175,10 +179,10 @@ async function changepassword(req, res) {
     }
 }
 
-async function SerchingData(req, res) {
+async function studentDetais(req, res) {
     try {
         const data = await db.user.findOne({
-            where: { id: 5 },
+            where: { id: 1 },
             attributes: ["firstName", "lastName"],
             include: [
                 {
@@ -197,15 +201,44 @@ async function SerchingData(req, res) {
         res.status(500).json({ message: 'Server error' })
     }
 }
+async function searching(req, res) {
+    const searchingDetails = req.params?.bookName
+    if (!searchingDetails) {
+        return res.status(400).json({ message: 'BookName missing' })
+    }
+    const BookData = await db.book.findOne({ where: { bookName: { [Op.like]: `%${searchingDetails}%` } } })
+    if (BookData) {
+        return res.status(400).json({ msg: "book Found", data: BookData })
+    } else {
+        return res.status(400).json({ msg: "book not found" })
+    }
+
+}
+
+const adminOnly = async (req, res) => {
+    try {
+        console.log("inside ", req.cookies.librarian)
+        if (req.cookies.librarian === "librarian%40yopmail.com") {
+            console.log("aaya")
+        }
+        res.json({})
+    } catch (error) {
+        console.log('✌️error --->', error);
+
+    }
+}
 
 
 
 module.exports = {
     Usersignup,
-    SerchingData,
+    studentDetais,
     UserSignIn,
     verify_email,
     forgotPassword,
     resetPassword,
-    changepassword
+    changepassword,
+    searching,
+    studentDetais,
+    adminOnly
 }
