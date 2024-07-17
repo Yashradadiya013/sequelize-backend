@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
-const { Op, where } = require('sequelize')
+const { Op } = require('sequelize')
 
 
 async function Usersignup(req, res) {
@@ -63,7 +63,7 @@ async function verify_email(req, res) {
         }
         user.isVerified = true;
 
-        var decodedEmail = jwt.verify(token, secretKey);
+        const decodedEmail = jwt.verify(token, secretKey);
         res.cookie('librarian', decodedEmail.email);
 
         await user.save();
@@ -215,13 +215,20 @@ async function searching(req, res) {
 
 }
 
-const adminOnly = async (req, res) => {
+async function adminOnly(req, res) {
     try {
-        console.log("inside ", req.cookies.librarian)
-        if (req.cookies.librarian === "librarian%40yopmail.com") {
-            console.log("aaya")
+        const librarianEmail = req.cookies.librarian;
+
+        if (librarianEmail === "librarian@yopmail.com") {
+            var allUser = await db.user.findAll();
+            var allBooks = await db.book.findAll();
+            var allBookIsuue = await db.bookIssue.findAll();
+            // console.log("Admin access granted for:", librarianEmail);
+            return res.json({ msg: "admin", allUser, allBooks, allBookIsuue });
+        } else {
+            return res.json({ msg: "not admin" })
         }
-        res.json({})
+
     } catch (error) {
         console.log('✌️error --->', error);
 
