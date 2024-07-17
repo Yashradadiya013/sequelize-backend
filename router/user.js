@@ -13,7 +13,7 @@ router.post('/resetpassword',resetPassword)
 router.post('/changepassword/:id',changepassword)
 router.post('/Booksignup',Booksignup)
 router.post('/BooksIssuSignup',BooksIssuSignup)
-router.get('/search/:bookName',searching)
+router.get('/search',searching)
 router.get('/studentData/:id',studentDetais)
 router.get('/adminOnly',adminOnly)
 

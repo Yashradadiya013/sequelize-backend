@@ -3,7 +3,7 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
-const { Op } = require('sequelize')
+const { Op, where } = require('sequelize')
 
 
 async function Usersignup(req, res) {
@@ -201,19 +201,52 @@ async function studentDetais(req, res) {
         res.status(500).json({ message: 'Server error' })
     }
 }
-async function searching(req, res) {
-    const searchingDetails = req.params?.bookName
-    if (!searchingDetails) {
-        return res.status(400).json({ message: 'BookName missing' })
-    }
-    const BookData = await db.book.findOne({ where: { bookName: { [Op.like]: `%${searchingDetails}%` } } })
-    if (BookData) {
-        return res.status(400).json({ msg: "book Found", data: BookData })
-    } else {
-        return res.status(400).json({ msg: "book not found" })
-    }
 
+async function searching(req, res) {
+    try {
+        const { firstName, lastName, bookName, issuedate, submitiondate } = req.body;
+
+        if (firstName || lastName || bookName || issuedate || submitiondate) {
+            // Build the query object dynamically based on the provided parameters
+            let whereConditions = {};
+
+            if (firstName) whereConditions.firstName = { [Op.like]: `%${firstName}%` };
+            if (lastName) whereConditions.lastName = { [Op.like]: `%${lastName}%` };
+            if (issuedate) whereConditions.issuedate = { [Op.eq]: issuedate };
+            if (submitiondate) whereConditions.submitiondate = { [Op.eq]: submitiondate };
+
+            let allData = await db.user.findAll({
+                where: whereConditions,
+                include: [
+                    {
+                        model: db.book,
+                        where: bookName ? { name: { [Op.like]: `%${bookName}%` } } : undefined,
+                        required: false
+                    },
+                    {
+                        model: db.bookIssue,
+                        required: false
+                    }
+                ]
+            });
+
+            return res.json({ msg: "ok", allData });
+        } 
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Server error' });
+    }
 }
+
+// if (!searchingDetails) {
+//     return res.status(400).json({ message: '' })
+// }
+// const BookData = await db.book.findOne({ where: { bookName: { [Op.like]: `%${searchingDetails}%` } } })
+// if (BookData) {
+//     return res.status(400).json({ msg: "book Found", data: BookData })
+// } else {
+//     return res.status(400).json({ msg: "book not found" })
+// }
 
 async function adminOnly(req, res) {
     try {
