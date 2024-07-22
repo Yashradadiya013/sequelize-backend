@@ -23,11 +23,12 @@ db.bookIssue = require('./BookIssue')(sequelize, DataTypes)
 db.user.hasMany(db.book, { foreignKey: 'userId' });
 db.book.belongsTo(db.user, { foreignKey: 'userId' });
 
+db.user.hasMany(db.bookIssue, { foreignKey: 'userId' });
+db.bookIssue.belongsTo(db.user, { foreignKey: 'userId' });
+
 db.book.hasMany(db.bookIssue, { foreignKey: 'bookid' });
 db.bookIssue.belongsTo(db.book, { foreignKey: 'bookid' });
 
-db.user.hasMany(db.bookIssue, { foreignKey: 'userId' });
-db.bookIssue.belongsTo(db.user, { foreignKey: 'userId' });
 
 db.sequelize.sync({ force: false })
 
