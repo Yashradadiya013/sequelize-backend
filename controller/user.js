@@ -3,9 +3,8 @@ const bcrypt = require('bcrypt')
 const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
-const { Op, where } = require('sequelize')
+const { Op } = require('sequelize')
 const moment = require('moment');
-
 
 async function Usersignup(req, res) {
     try {
@@ -205,15 +204,11 @@ async function studentDetais(req, res) {
 
 async function searching(req, res) {
     try {
-        const { firstName = "", lastName = "", bookName = "", issuedate = "", submitiondate = "" } = req.body;
-        console.log('✌️ req.body --->', req.body);
-
-        const formattedIssuedate = issuedate ? moment(issuedate).toISOString() : null;
-        const formattedSubmitiondate = submitiondate ? moment(submitiondate).toISOString() : null;
+        const { firstName, lastName, bookName, issuedate, submitiondate } = req.body;
+        console.log('Request Body:', req.body);
 
         const userConditions = [];
         const bookConditions = [];
-        const bookIssueConditions = [];
 
         if (firstName) {
             userConditions.push({ firstName: { [Op.like]: `%${firstName}%` } });
@@ -224,12 +219,15 @@ async function searching(req, res) {
         if (bookName) {
             bookConditions.push({ bookName: { [Op.like]: `%${bookName}%` } });
         }
-        if (formattedIssuedate) {
-            bookIssueConditions.push({ issuedate: { [Op.eq]: formattedIssuedate } });
+        if (issuedate) {
+            userConditions.push({ '$books.bookIssues.issuedate$': { [Op.between]: [issuedate, submitiondate] } });
         }
-        if (formattedSubmitiondate) {
-            bookIssueConditions.push({ submitiondate: { [Op.eq]: formattedSubmitiondate } });
+        if (submitiondate) {
+            userConditions.push({ '$books.bookIssues.submitiondate$': { [Op.between]: [issuedate, submitiondate] } });
         }
+
+        console.log('User Conditions:', userConditions);
+        console.log('Book Conditions:', bookConditions);
 
         const users = await db.user.findAll({
             where: userConditions.length > 0 ? { [Op.and]: userConditions } : {},
@@ -237,18 +235,10 @@ async function searching(req, res) {
                 {
                     model: db.book,
                     where: bookConditions.length > 0 ? { [Op.and]: bookConditions } : {},
-                    required: bookConditions.length > 0,
-                    include: [
-                        {
-                            model: db.bookIssue,
-                            where: bookIssueConditions.length > 0 ? { [Op.and]: bookIssueConditions } : {},
-                            required: bookIssueConditions.length > 0,
-                        }
-                    ]
                 }
-            ]
-        });
+            ],
 
+        });
         return res.json({ msg: "ok", users });
 
     } catch (error) {

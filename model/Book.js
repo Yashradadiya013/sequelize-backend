@@ -1,6 +1,7 @@
-const d = require('../model/index')
+const d = require('../model/index');
+
 module.exports = (sequelize, DataTypes) => {
-    const Book = sequelize.define('books', {
+    const Book = sequelize.define('Books', {
         id: {
             type: DataTypes.INTEGER,
             autoIncrement: true,
@@ -12,16 +13,15 @@ module.exports = (sequelize, DataTypes) => {
         },
         course: {
             type: DataTypes.STRING,
-            allowNull: false
+            allowNull: false,
         },
-        sem: {  
+        sem: {
             type: DataTypes.INTEGER,
             allowNull: false,
         },
-        userId:DataTypes.INTEGER
     }, {
         timestamps: false,
-    }
-    )
-    return Book
-}
+    });
+
+    return Book;
+};

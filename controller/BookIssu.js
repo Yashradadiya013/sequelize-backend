@@ -1,9 +1,9 @@
 const db = require('../model/index')
 async function BooksIssuSignup(req, res) {
     try {
-        const {bookid,userId,issuedate,submitiondate} = req.body
+        const {bookId,userId,issuedate,submitiondate} = req.body
         const newBook = await db.bookIssue.create({
-            bookid,
+            bookId,
             userId,
             issuedate,
             submitiondate

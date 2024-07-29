@@ -1,12 +1,11 @@
 const db = require('../model/index')
 async function Booksignup(req, res) {
     try {
-        const {bookName,course,sem,userId} = req.body
+        const {bookName,course,sem} = req.body
         const newBook = await db.book.create({
             bookName,
             course,
-            sem,
-            userId
+            sem
         })
         return res.json({ newBook })
     } catch (error) {

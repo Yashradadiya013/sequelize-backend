@@ -6,19 +6,33 @@ module.exports = (sequelize, DataTypes) => {
             autoIncrement: true,
             primaryKey: true,
         },
-        bookid: DataTypes.INTEGER,
-        userId: DataTypes.INTEGER,
-        issuedate: {
-            type: DataTypes.DATE,
+        bookId: {
+            type: DataTypes.INTEGER,
             allowNull: false,
-            get(){
+            references: {
+                model: 'Books', // Name of the table
+                key: 'id',
+            }
+        },
+        userId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            references: {
+                model: 'users', // Name of the table
+                key: 'id',
+            }
+        },
+        issuedate: {
+            type: DataTypes.STRING,
+            allowNull: false,
+            get() {
                 return moment(this.getDataValue('issuedate')).format('YYYY-MM-DD')
             }
         },
         submitiondate: {
-            type: DataTypes.DATE,
+            type: DataTypes.STRING,
             allowNull: false,
-            get(){
+            get() {
                 return moment(this.getDataValue('submitiondate')).format('YYYY-MM-DD')
             }
         }
