@@ -4,7 +4,6 @@ const jwt = require('jsonwebtoken')
 const secretKey = '$h:n(?bj'
 const { transporter } = require('../util/nodemailor')
 const { Op } = require('sequelize')
-const moment = require('moment');
 
 async function Usersignup(req, res) {
     try {
@@ -17,7 +16,7 @@ async function Usersignup(req, res) {
         }
         const HashPassword = await bcrypt.hash(password, 10)
         const token = jwt.sign({ email }, secretKey, { expiresIn: '1d' })
-        //crreate new user
+        //create new user
         const newUser = await db.user.create({
             firstName,
             lastName,
@@ -112,7 +111,7 @@ async function forgotPassword(req, res) {
                 from: 'yashradadiya013@gmail.com',
                 to: findEmail.email,
                 subject: 'reset password',
-                text: `Click on the following link to forgot your password: http://localhost:3000/api/resetpassword/${token}`
+                text: `Click on the following link to forgot your password: http://localhost:3000/api/resetpassword/${token}`,
             })
             transporter.sendMail(mailOptions, (errro) => {
                 if (errro) {
